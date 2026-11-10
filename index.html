@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu rueda de la vida</title>
+<meta name="description" content="Ocho áreas, un toque por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.">
+<meta property="og:title" content="Tu rueda de la vida">
+<meta property="og:description" content="Ocho áreas, tres minutos. ¿Cómo está tu rueda hoy?">
+<meta property="og:url" content="https://pablodanielmarino17.github.io/rueda/">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#141414">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Sistema Tinta, paleta oscura. Una sola columna angosta: la rueda queda arriba y el panel de abajo cambia. */
+  --ink:#141414;
+  --paper:#F0E6C8;
+  --brick:#B83A2A;
+  --brick-hi:#D9503A;
+  --line:rgba(240,230,200,.18);
+  --mute:rgba(240,230,200,.64);
+  --font-display:'Playfair Display',Georgia,'Times New Roman',serif;
+  --font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--paper);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.app{min-height:100%;max-width:440px;margin:0 auto;padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.top b{font-weight:600;color:var(--paper)}
+.count{font-variant-numeric:tabular-nums}
+
+.stage{display:flex;justify-content:center}
+#wheel{width:100%;max-width:330px;height:auto;display:block;touch-action:manipulation}
+#wheel .ring{fill:none;stroke:var(--paper);stroke-opacity:.13;stroke-width:1}
+#wheel .ring.outer{stroke-opacity:.34}
+#wheel .slot{fill:var(--paper);fill-opacity:.035;cursor:pointer;transition:fill-opacity .25s}
+#wheel .slot.on{fill-opacity:.12}
+#wheel .wedge{fill:var(--paper);transition:fill .3s,fill-opacity .3s;pointer-events:none}
+#wheel .wedge.focus{fill:var(--brick-hi)}
+#wheel.ghost .wedge{fill-opacity:.2}
+#wheel .lbl{font-family:var(--font-body);font-size:10.5px;font-weight:500;letter-spacing:.14em;fill:var(--paper);fill-opacity:.55;transition:fill-opacity .25s;pointer-events:none}
+#wheel .lbl.on,#wheel .lbl.focus{fill-opacity:1}
+#wheel .lbl.focus{fill:var(--brick-hi)}
+#wheel .num{font-family:var(--font-body);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+#wheel .hub{fill:var(--ink);stroke:var(--paper);stroke-opacity:.34}
+.ghost-note{text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:-6px}
+
+.panel{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:0}
+h1,h2{font-family:var(--font-display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:44px;line-height:1.02}
+h1 em{font-weight:500;color:var(--brick-hi)}
+h2{font-size:31px;line-height:1.08}
+p{margin:0}
+.lead{color:var(--mute);max-width:36ch}
+.small{font-size:13px;color:var(--mute)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;padding:14px 18px;border-radius:999px;border:1px solid var(--paper);background:var(--paper);color:var(--ink);font-weight:600;font-size:16px;text-decoration:none;cursor:pointer;text-align:center}
+.btn:disabled{opacity:.35;cursor:default}
+.btn.brick{background:var(--brick);border-color:var(--brick);color:var(--paper)}
+.btn.line{background:transparent;color:var(--paper);border-color:var(--line)}
+.btn svg{flex:none}
+.link{background:none;border:0;padding:8px 0;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px;align-self:flex-start}
+.btn:focus-visible,.link:focus-visible,.key:focus-visible,.chip:focus-visible{outline:2px solid var(--brick-hi);outline-offset:3px}
+
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.key{height:54px;border-radius:14px;border:1px solid var(--line);background:transparent;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.key.sel{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--mute)}
+
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:transparent;cursor:pointer;text-align:left;font-size:15px;transition:background .15s,border-color .15s}
+.chip span{font-variant-numeric:tabular-nums;color:var(--mute)}
+.chip.sel{background:var(--brick);border-color:var(--brick)}
+.chip.sel span{color:var(--paper)}
+.ages{display:flex;flex-wrap:wrap;gap:8px}
+.ages .chip{min-height:40px;padding:8px 14px;font-size:14px}
+
+.ask{border-left:2px solid var(--brick-hi);padding:4px 0 4px 16px;display:flex;flex-direction:column;gap:8px}
+.ask q{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:25px;line-height:1.2;quotes:none;text-wrap:balance}
+.actions{display:flex;flex-direction:column;gap:10px}
+.shot{display:flex;flex-direction:column;gap:10px;align-items:center}
+.shot img{width:62%;max-width:240px;height:auto;border-radius:14px;border:1px solid var(--line)}
+.foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute)}
+.foot a{color:var(--paper)}
+
+@media (min-width:520px){.app{padding-top:36px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><b>Pablo M. · Coaching</b><span class="count" id="count"></span></div>
+
+  <div class="stage">
+    <svg id="wheel" class="ghost" viewBox="-175 -175 350 350" role="img" aria-label="Rueda de la vida con ocho áreas"></svg>
+  </div>
+  <p class="ghost-note" id="ghostNote">Ejemplo</p>
+
+  <!-- 1 · Bienvenida -->
+  <section class="panel" id="p-intro">
+    <h1>Tu rueda<br>de la <em>vida</em></h1>
+    <p class="lead">Ocho áreas, un toque por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.</p>
+    <button class="btn" id="start" type="button">Empezar</button>
+    <p class="small">Es gratis y no se guarda nada de lo que marques.</p>
+  </section>
+
+  <!-- 2 · Puntuar -->
+  <section class="panel" id="p-rate" hidden>
+    <h2 id="areaName"></h2>
+    <p class="lead" id="areaDesc"></p>
+    <p class="eyebrow">Del 1 al 10, ¿qué tan a gusto estás hoy?</p>
+    <div class="pad" id="pad" role="group" aria-label="Puntaje del 1 al 10"></div>
+    <div class="ends"><span>1 · nada a gusto</span><span>10 · totalmente</span></div>
+    <button class="link" id="back" type="button">Volver</button>
+  </section>
+
+  <!-- 3 · Elegir -->
+  <section class="panel" id="p-pick" hidden>
+    <h2>¿Cuál quieres mover primero?</h2>
+    <p class="lead">No tiene que ser la más baja. Elige la que, si se mueve, empuja a las demás.</p>
+    <div class="chips" id="chips"></div>
+    <p class="eyebrow">Tu edad (opcional)</p>
+    <div class="ages" id="ages"></div>
+    <button class="btn" id="see" type="button" disabled>Ver mi rueda</button>
+    <button class="link" id="back2" type="button">Cambiar un puntaje</button>
+  </section>
+
+  <!-- 4 · Resultado -->
+  <section class="panel" id="p-result" hidden>
+    <h2>Esta es tu rueda, hoy.</h2>
+    <div class="ask">
+      <p class="eyebrow">Una pregunta para llevarte</p>
+      <q id="question"></q>
+    </div>
+    <div class="actions">
+      <a class="btn brick" id="wa" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.6-1.2A9 9 0 1 0 12 3Z"/></svg>
+        Enviarle mi rueda a Pablo
+      </a>
+      <p class="small">Se abre WhatsApp con tus puntajes ya escritos. Te respondo yo, con una pregunta para pensar.</p>
+      <button class="btn line" id="mkimg" type="button">Guardar imagen para mis historias</button>
+      <div class="shot" id="shot" hidden>
+        <img id="shotImg" alt="Tu rueda de la vida lista para compartir">
+        <p class="small">Si no se descargó sola, mantén presionada la imagen y elige guardar. Al subirla, etiqueta a @pablom.coach.</p>
+      </div>
+      <a class="btn line" id="ig" target="_blank" rel="noopener">Seguir a @pablom.coach</a>
+    </div>
+    <button class="link" id="redo" type="button">Hacerla de nuevo</button>
+  </section>
+
+  <footer class="foot">
+    <span>Pablo M. · Coach en formación · <a id="igFoot" target="_blank" rel="noopener">@pablom.coach</a></span>
+    <span>Esta página no guarda ni envía tus respuestas. Solo viajan si tú las mandas por WhatsApp.</span>
+  </footer>
+</main>
+
+<script>
+/* ====== CONFIGURACIÓN ====== */
+var WA_NUMBER = "5491154166929";     // WhatsApp de coaching
+var IG_HANDLE = "pablom.coach";      // usuario de Instagram
+var SITE_URL  = "https://pablodanielmarino17.github.io/rueda/";   // link final de esta página
+
+/* ====== DATOS ====== */
+var AREAS = [
+  {n:"Salud y cuerpo",          s:"Salud",      q:"Sueño, energía, movimiento y cuidado de tu cuerpo."},
+  {n:"Trabajo y profesión",     s:"Trabajo",    q:"Lo que haces para ganarte la vida o desarrollarte."},
+  {n:"Dinero",                  s:"Dinero",     q:"Tus ingresos, tus gastos y tu tranquilidad económica."},
+  {n:"Pareja",                  s:"Pareja",     q:"Tu vínculo de pareja, o cómo vives hoy ese espacio."},
+  {n:"Familia",                 s:"Familia",    q:"La relación con tu familia y el tiempo que comparten."},
+  {n:"Amistades y vida social", s:"Amistades",  q:"Tus amistades, tus grupos, tu compañía."},
+  {n:"Desarrollo personal",     s:"Desarrollo", q:"Aprender, crecer y avanzar hacia lo que te importa."},
+  {n:"Ocio y disfrute",         s:"Ocio",       q:"Descanso, pasatiempos y tiempo para ti."}
+];
+var AGES = ["18 a 24","25 a 34","35 a 44","45 a 54","55 o más"];
+var EXAMPLE = [7,4,5,6,8,7,3,5];
+var N = AREAS.length, R = 132, R0 = 16, RL = 143, GAP = 1.6, STEP = 360 / N;
+var INK = "#141414", PAPER = "#F0E6C8", BRICK_HI = "#D9503A";
+
+var state = {step:"intro", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:""};
+var shown = EXAMPLE.slice();           // valores dibujados (se animan hacia el objetivo)
+var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ====== GEOMETRÍA ====== */
+function pt(r, deg){ var a = deg * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; }
+function rv(v){ return R0 + (R - R0) * v / 10; }
+function f(n){ return n.toFixed(2); }
+function sector(rIn, rOut, a0, a1){
+  var p1 = pt(rIn,a0), p2 = pt(rOut,a0), p3 = pt(rOut,a1), p4 = pt(rIn,a1);
+  return "M"+f(p1[0])+" "+f(p1[1])+"L"+f(p2[0])+" "+f(p2[1])+"A"+rOut+" "+rOut+" 0 0 1 "+f(p3[0])+" "+f(p3[1])+
+         "L"+f(p4[0])+" "+f(p4[1])+"A"+rIn+" "+rIn+" 0 0 0 "+f(p1[0])+" "+f(p1[1])+"Z";
+}
+function a0(i){ return -90 + i * STEP; }
+function mid(i){ return a0(i) + STEP / 2; }
+function lower(i){ return Math.sin(mid(i) * Math.PI / 180) > 0; }
+
+/* ====== RUEDA (SVG) ====== */
+var NS = "http://www.w3.org/2000/svg", wheel = $("wheel"), slots = [], wedges = [], nums = [], lbls = [];
+function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function buildWheel(){
+  var defs = el("defs", {}); wheel.appendChild(defs);
+  [2,4,6,8].forEach(function(v){ wheel.appendChild(el("circle", {class:"ring", r:f(rv(v))})); });
+  for (var i = 0; i < N; i++){
+    var s = el("path", {class:"slot", d:sector(R0, R, a0(i) + GAP/2, a0(i) + STEP - GAP/2), "data-i":i});
+    wheel.appendChild(s); slots.push(s);
+  }
+  for (i = 0; i < N; i++){ var w = el("path", {class:"wedge"}); wheel.appendChild(w); wedges.push(w); }
+  wheel.appendChild(el("circle", {class:"ring outer", r:R}));
+  wheel.appendChild(el("circle", {class:"hub", r:R0 - 5}));
+  for (i = 0; i < N; i++){
+    var n = el("text", {class:"num"}); wheel.appendChild(n); nums.push(n);
+    var low = lower(i), r = low ? RL + 8 : RL, s0 = pt(r, low ? a0(i) + STEP : a0(i)), s1 = pt(r, low ? a0(i) : a0(i) + STEP);
+    defs.appendChild(el("path", {id:"arc"+i, d:"M"+f(s0[0])+" "+f(s0[1])+"A"+r+" "+r+" 0 0 "+(low?0:1)+" "+f(s1[0])+" "+f(s1[1])}));
+    var t = el("text", {class:"lbl"}), tp = el("textPath", {href:"#arc"+i, startOffset:"50%", "text-anchor":"middle"});
+    tp.textContent = AREAS[i].s.toUpperCase(); t.appendChild(tp); wheel.appendChild(t); lbls.push(t);
+  }
+  wheel.addEventListener("click", function(e){
+    var i = e.target.getAttribute && e.target.getAttribute("data-i"); if (i === null || i === undefined) return; i = +i;
+    if (state.step === "rate"){ state.i = i; render(); }
+    else if (state.step === "pick"){ state.focus = i; render(); }
+  });
+}
+function paintWheel(){
+  for (var i = 0; i < N; i++){
+    var v = shown[i];
+    wedges[i].setAttribute("d", v > 0.05 ? sector(R0, rv(v), a0(i) + GAP/2, a0(i) + STEP - GAP/2) : "");
+    var isFocus = state.focus === i && state.step !== "intro";
+    wedges[i].setAttribute("class", "wedge" + (isFocus ? " focus" : ""));
+    var active = state.step === "rate" && state.i === i;
+    slots[i].setAttribute("class", "slot" + (active ? " on" : ""));
+    lbls[i].setAttribute("class", "lbl" + (isFocus ? " focus" : (active || state.step === "result" || state.step === "pick" ? " on" : "")));
+    var sc = state.scores[i], show = state.step !== "intro" && sc > 0;
+    var inside = sc >= 4, np = pt(inside ? rv(v) - 11 : rv(v) + 11, mid(i));
+    nums[i].textContent = show ? sc : "";
+    nums[i].setAttribute("x", f(np[0])); nums[i].setAttribute("y", f(np[1]));
+    nums[i].setAttribute("fill", inside ? INK : PAPER);
+  }
+}
+var raf = 0;
+function animate(){
+  cancelAnimationFrame(raf);
+  var target = state.step === "intro" ? EXAMPLE : state.scores;
+  (function tick(){
+    var moving = false;
+    for (var i = 0; i < N; i++){
+      var d = target[i] - shown[i];
+      if (reduce || Math.abs(d) < 0.02) shown[i] = target[i]; else { shown[i] += d * 0.2; moving = true; }
+    }
+    paintWheel();
+    if (moving) raf = requestAnimationFrame(tick);
+  })();
+}
+
+/* ====== PANTALLAS ====== */
+function buildControls(){
+  for (var v = 1; v <= 10; v++){
+    var b = document.createElement("button"); b.type = "button"; b.className = "key"; b.id = "key" + v; b.textContent = v;
+    b.setAttribute("aria-label", v + " de 10"); b.dataset.v = v; $("pad").appendChild(b);
+  }
+  $("pad").addEventListener("click", function(e){
+    var v = e.target.dataset && e.target.dataset.v; if (!v) return;
+    state.scores[state.i] = +v; render();
+    var here = state.i;
+    setTimeout(function(){
+      if (state.step !== "rate" || state.i !== here) return;
+      var next = state.scores.indexOf(0);
+      if (next === -1) state.step = "pick"; else state.i = here < N - 1 && state.scores[here + 1] === 0 ? here + 1 : next;
+      render();
+    }, reduce ? 150 : 420);
+  });
+  AREAS.forEach(function(a, i){
+    var c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.id = "chip" + i; c.dataset.i = i;
+    c.innerHTML = a.s + " <span></span>"; $("chips").appendChild(c);
+  });
+  $("chips").addEventListener("click", function(e){
+    var c = e.target.closest(".chip"); if (!c) return; state.focus = +c.dataset.i; render();
+  });
+  AGES.forEach(function(t, i){
+    var c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.id = "age" + i; c.dataset.age = t; c.textContent = t;
+    $("ages").appendChild(c);
+  });
+  $("ages").addEventListener("click", function(e){
+    var c = e.target.closest(".chip"); if (!c) return; state.age = state.age === c.dataset.age ? "" : c.dataset.age; render();
+  });
+  $("start").onclick = function(){ state.step = "rate"; state.i = Math.max(0, state.scores.indexOf(0)); render(); };
+  $("back").onclick = function(){ if (state.i > 0) state.i--; else state.step = "intro"; render(); };
+  $("back2").onclick = function(){ state.step = "rate"; state.i = 0; render(); };
+  $("see").onclick = function(){ if (state.focus > -1){ state.step = "result"; render(); window.scrollTo(0, 0); } };
+  $("redo").onclick = function(){ state = {step:"rate", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:""}; $("shot").hidden = true; render(); window.scrollTo(0, 0); };
+  $("mkimg").onclick = makeImage;
+  var ig = "https://www.instagram.com/" + IG_HANDLE + "/";
+  $("ig").href = ig; $("igFoot").href = ig;
+}
+function waText(){
+  var line = AREAS.map(function(a, i){ return a.s + " " + state.scores[i]; }).join(" · ");
+  var t = "Hola Pablo, hice mi rueda de la vida.\n\n" + line + "\n\nQuiero mover primero: " + AREAS[state.focus].n + ".";
+  if (state.age) t += "\nEdad: " + state.age + ".";
+  return t;
+}
+function render(){
+  var s = state.step;
+  ["intro","rate","pick","result"].forEach(function(k){ $("p-" + k).hidden = k !== s; });
+  wheel.setAttribute("class", s === "intro" ? "ghost" : "");
+  $("ghostNote").hidden = s !== "intro";
+  $("count").textContent = s === "rate" ? "Área " + (state.i + 1) + " de " + N : "";
+  if (s === "rate"){
+    $("areaName").textContent = AREAS[state.i].n;
+    $("areaDesc").textContent = AREAS[state.i].q;
+    for (var v = 1; v <= 10; v++) $("key" + v).className = "key" + (state.scores[state.i] === v ? " sel" : "");
+  }
+  if (s === "pick"){
+    AREAS.forEach(function(a, i){
+      var c = $("chip" + i); c.className = "chip" + (state.focus === i ? " sel" : ""); c.querySelector("span").textContent = state.scores[i];
+      c.setAttribute("aria-pressed", state.focus === i);
+    });
+    AGES.forEach(function(t, i){ var c = $("age" + i); c.className = "chip" + (state.age === t ? " sel" : ""); c.setAttribute("aria-pressed", state.age === t); });
+    $("see").disabled = state.focus < 0;
+  }
+  if (s === "result"){
+    $("question").textContent = "¿Qué tendría que pasar para que " + AREAS[state.focus].s + " suba un punto?";
+    $("wa").href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waText());
+  }
+  animate();
+}
+
+/* ====== IMAGEN PARA HISTORIAS (1080 × 1920) ====== */
+function spaced(ctx, text, x, y, sp){
+  var w = 0, i; for (i = 0; i < text.length; i++) w += ctx.measureText(text[i]).width + sp; w -= sp;
+  var cx = x - w / 2; ctx.textAlign = "left";
+  for (i = 0; i < text.length; i++){ ctx.fillText(text[i], cx, y); cx += ctx.measureText(text[i]).width + sp; }
+}
+function arcText(ctx, text, r, midDeg, low, sp){
+  var widths = [], total = 0, i;
+  for (i = 0; i < text.length; i++){ widths.push(ctx.measureText(text[i]).width); total += widths[i] + sp; } total -= sp;
+  var dir = low ? -1 : 1, ang = midDeg * Math.PI / 180 - dir * total / (2 * r);
+  ctx.textAlign = "center";
+  for (i = 0; i < text.length; i++){
+    var a = ang + dir * (widths[i] / 2) / r;
+    ctx.save(); ctx.translate(r * Math.cos(a), r * Math.sin(a)); ctx.rotate(a + dir * Math.PI / 2); ctx.fillText(text[i], 0, 0); ctx.restore();
+    ang += dir * (widths[i] + sp) / r;
+  }
+}
+function drawShare(){
+  var c = document.createElement("canvas"); c.width = 1080; c.height = 1920;
+  var x = c.getContext("2d"), k = 2.85, i;
+  x.fillStyle = INK; x.fillRect(0, 0, 1080, 1920);
+  x.fillStyle = PAPER; x.globalAlpha = .7; x.font = "600 30px 'Space Grotesk', sans-serif"; x.textBaseline = "alphabetic";
+  spaced(x, "MI RUEDA DE LA VIDA", 540, 330, 9); x.globalAlpha = 1;
+  x.save(); x.translate(540, 850); x.scale(k, k);
+  x.strokeStyle = PAPER; x.lineWidth = 1 / k * 2;
+  [2,4,6,8].forEach(function(v){ x.globalAlpha = .13; x.beginPath(); x.arc(0, 0, rv(v), 0, Math.PI * 2); x.stroke(); });
+  for (i = 0; i < N; i++){
+    var s0 = (a0(i) + GAP/2) * Math.PI / 180, s1 = (a0(i) + STEP - GAP/2) * Math.PI / 180, v = state.scores[i];
+    x.globalAlpha = .035; x.fillStyle = PAPER; x.beginPath(); x.arc(0, 0, R, s0, s1); x.arc(0, 0, R0, s1, s0, true); x.closePath(); x.fill();
+    x.globalAlpha = 1; x.fillStyle = state.focus === i ? BRICK_HI : PAPER;
+    x.beginPath(); x.arc(0, 0, rv(v), s0, s1); x.arc(0, 0, R0, s1, s0, true); x.closePath(); x.fill();
+    var p = pt(v >= 4 ? rv(v) - 11 : rv(v) + 11, mid(i));
+    x.fillStyle = v >= 4 ? INK : PAPER; x.font = "600 13px 'Space Grotesk', sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText(String(v), p[0], p[1]);
+    x.textBaseline = "alphabetic"; x.font = "500 10.5px 'Space Grotesk', sans-serif";
+    x.fillStyle = state.focus === i ? BRICK_HI : PAPER;
+    arcText(x, AREAS[i].s.toUpperCase(), lower(i) ? RL + 8 : RL, mid(i), lower(i), 1.5);
+  }
+  x.globalAlpha = .34; x.strokeStyle = PAPER; x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.stroke();
+  x.globalAlpha = 1; x.fillStyle = INK; x.beginPath(); x.arc(0, 0, R0 - 5, 0, Math.PI * 2); x.fill();
+  x.globalAlpha = .34; x.stroke(); x.globalAlpha = 1; x.restore();
+  x.fillStyle = PAPER; x.globalAlpha = .7; x.font = "600 28px 'Space Grotesk', sans-serif"; spaced(x, "HOY ELIJO MOVER", 540, 1378, 8); x.globalAlpha = 1;
+  x.textAlign = "center"; x.fillStyle = BRICK_HI;
+  var name = AREAS[state.focus].n, size = 84; x.font = "italic 700 " + size + "px 'Playfair Display', Georgia, serif";
+  while (x.measureText(name).width > 960 && size > 48){ size -= 4; x.font = "italic 700 " + size + "px 'Playfair Display', Georgia, serif"; }
+  x.fillText(name, 540, 1478);
+  x.fillStyle = PAPER; x.font = "500 50px 'Playfair Display', Georgia, serif"; x.fillText("¿Y la tuya?", 540, 1592);
+  x.font = "600 36px 'Space Grotesk', sans-serif"; x.fillText("@" + IG_HANDLE, 540, 1650);
+  return c;
+}
+function makeImage(){
+  var ready = document.fonts && document.fonts.load
+    ? Promise.all([document.fonts.load("italic 700 84px 'Playfair Display'"), document.fonts.load("500 50px 'Playfair Display'"), document.fonts.load("600 30px 'Space Grotesk'"), document.fonts.load("500 11px 'Space Grotesk'")]).catch(function(){})
+    : Promise.resolve();
+  ready.then(function(){
+    var c = drawShare();
+    $("shotImg").src = c.toDataURL("image/png"); $("shot").hidden = false;
+    c.toBlob(function(blob){
+      if (!blob) return;
+      var file = null; try { file = new File([blob], "mi-rueda-de-la-vida.png", {type:"image/png"}); } catch (e) {}
+      var text = "Mi rueda de la vida. ¿Y la tuya? @" + IG_HANDLE + (SITE_URL ? " " + SITE_URL : "");
+      if (file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], text:text}).catch(function(){});
+      } else {
+        try { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mi-rueda-de-la-vida.png"; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
+      }
+    }, "image/png");
+    $("shot").scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"nearest"});
+  });
+}
+
+/* ====== ARRANQUE ====== */
+function start(saved){
+  if (saved && saved.scores && saved.scores.length === N) state = saved;
+  buildWheel(); buildControls(); render();
+}
+var hot = window.claude && window.claude.hot;
+if (hot && hot.snapshot) hot.snapshot(function(){ return state; });
+if (hot && hot.ready) hot.ready(start); else start(hot && hot.data ? hot.data : null);
+</script>
+</body>
+</html>
