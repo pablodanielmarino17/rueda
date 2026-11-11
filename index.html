@@ -4,31 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tu rueda de la vida</title>
-<meta name="description" content="Ocho áreas, un toque por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.">
+<meta name="description" content="Ocho áreas, un puntaje por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.">
 <meta property="og:title" content="Tu rueda de la vida">
 <meta property="og:description" content="Ocho áreas, tres minutos. ¿Cómo está tu rueda hoy?">
 <meta property="og:url" content="https://pablodanielmarino17.github.io/rueda/">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#141414">
+<meta name="theme-color" content="#343331">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Sistema Tinta, paleta oscura. Una sola columna angosta: la rueda queda arriba y el panel de abajo cambia. */
-  --ink:#141414;
+  /* Sistema Tinta sobre gris. Una sola columna angosta: la rueda queda arriba y el panel de abajo cambia. */
+  --bg:#343331;
+  --ink:#171717;
   --paper:#F0E6C8;
   --brick:#B83A2A;
-  --brick-hi:#D9503A;
-  --line:rgba(240,230,200,.18);
-  --mute:rgba(240,230,200,.64);
+  --brick-hi:#E4634C;
+  --line:rgba(240,230,200,.24);
+  --mute:rgba(240,230,200,.72);
   --font-display:'Playfair Display',Georgia,'Times New Roman',serif;
   --font-body:'Space Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--ink);color:var(--paper);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--paper);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
 [hidden]{display:none!important}
 .app{min-height:100%;max-width:440px;margin:0 auto;padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px}
@@ -38,18 +39,18 @@ button{font:inherit;color:inherit}
 
 .stage{display:flex;justify-content:center}
 #wheel{width:100%;max-width:330px;height:auto;display:block;touch-action:manipulation}
-#wheel .ring{fill:none;stroke:var(--paper);stroke-opacity:.13;stroke-width:1}
+#wheel .ring{fill:none;stroke:var(--paper);stroke-opacity:.17;stroke-width:1}
 #wheel .ring.outer{stroke-opacity:.34}
-#wheel .slot{fill:var(--paper);fill-opacity:.035;cursor:pointer;transition:fill-opacity .25s}
-#wheel .slot.on{fill-opacity:.12}
+#wheel .slot{fill:var(--paper);fill-opacity:.05;cursor:pointer;transition:fill-opacity .25s}
+#wheel .slot.on{fill-opacity:.16}
 #wheel .wedge{fill:var(--paper);transition:fill .3s,fill-opacity .3s;pointer-events:none}
 #wheel .wedge.focus{fill:var(--brick-hi)}
 #wheel.ghost .wedge{fill-opacity:.2}
-#wheel .lbl{font-family:var(--font-body);font-size:10.5px;font-weight:500;letter-spacing:.14em;fill:var(--paper);fill-opacity:.55;transition:fill-opacity .25s;pointer-events:none}
+#wheel .lbl{font-family:var(--font-body);font-size:10.5px;font-weight:500;letter-spacing:.14em;fill:var(--paper);fill-opacity:.66;transition:fill-opacity .25s;pointer-events:none}
 #wheel .lbl.on,#wheel .lbl.focus{fill-opacity:1}
 #wheel .lbl.focus{fill:var(--brick-hi)}
 #wheel .num{font-family:var(--font-body);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-#wheel .hub{fill:var(--ink);stroke:var(--paper);stroke-opacity:.34}
+#wheel .hub{fill:var(--bg);stroke:var(--paper);stroke-opacity:.34}
 .ghost-note{text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:-6px}
 
 .panel{display:flex;flex-direction:column;gap:14px}
@@ -68,8 +69,11 @@ p{margin:0}
 .btn.line{background:transparent;color:var(--paper);border-color:var(--line)}
 .btn svg{flex:none}
 .link{background:none;border:0;padding:8px 0;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px;align-self:flex-start}
-.btn:focus-visible,.link:focus-visible,.key:focus-visible,.chip:focus-visible{outline:2px solid var(--brick-hi);outline-offset:3px}
+.btn:focus-visible,.link:focus-visible,.key:focus-visible,.chip:focus-visible,.field input:focus-visible{outline:2px solid var(--brick-hi);outline-offset:3px}
 
+.field{display:flex;flex-direction:column;gap:8px}
+.field input{height:54px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--paper);font:inherit;font-size:17px;padding:0 16px;width:100%}
+.field input::placeholder{color:var(--mute)}
 .pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .key{height:54px;border-radius:14px;border:1px solid var(--line);background:transparent;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
 .key.sel{background:var(--paper);color:var(--ink);border-color:var(--paper)}
@@ -107,7 +111,9 @@ p{margin:0}
   <!-- 1 · Bienvenida -->
   <section class="panel" id="p-intro">
     <h1>Tu rueda<br>de la <em>vida</em></h1>
-    <p class="lead">Ocho áreas, un toque por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.</p>
+    <p class="lead">Ocho áreas, un puntaje por cada una. En tres minutos ves cómo está tu vida hoy y eliges por dónde empezar.</p>
+    <label class="field" for="name"><span class="eyebrow">Tu nombre (opcional)</span>
+      <input id="name" type="text" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="¿Cómo te llamas?"></label>
     <button class="btn" id="start" type="button">Empezar</button>
     <p class="small">Es gratis y no se guarda nada de lo que marques.</p>
   </section>
@@ -119,6 +125,7 @@ p{margin:0}
     <p class="eyebrow">Del 1 al 10, ¿qué tan a gusto estás hoy?</p>
     <div class="pad" id="pad" role="group" aria-label="Puntaje del 1 al 10"></div>
     <div class="ends"><span>1 · nada a gusto</span><span>10 · totalmente</span></div>
+    <button class="btn" id="next" type="button" disabled>Siguiente</button>
     <button class="link" id="back" type="button">Volver</button>
   </section>
 
@@ -135,7 +142,7 @@ p{margin:0}
 
   <!-- 4 · Resultado -->
   <section class="panel" id="p-result" hidden>
-    <h2>Esta es tu rueda, hoy.</h2>
+    <h2 id="resultTitle">Esta es tu rueda, hoy.</h2>
     <div class="ask">
       <p class="eyebrow">Una pregunta para llevarte</p>
       <q id="question"></q>
@@ -182,9 +189,9 @@ var AREAS = [
 var AGES = ["18 a 24","25 a 34","35 a 44","45 a 54","55 o más"];
 var EXAMPLE = [7,4,5,6,8,7,3,5];
 var N = AREAS.length, R = 132, R0 = 16, RL = 143, GAP = 1.6, STEP = 360 / N;
-var INK = "#141414", PAPER = "#F0E6C8", BRICK_HI = "#D9503A";
+var BG = "#343331", INK = "#171717", PAPER = "#F0E6C8", BRICK_HI = "#E4634C";
 
-var state = {step:"intro", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:""};
+var state = {step:"intro", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:"", name:""};
 var shown = EXAMPLE.slice();           // valores dibujados (se animan hacia el objetivo)
 var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 var $ = function(id){ return document.getElementById(id); };
@@ -268,14 +275,13 @@ function buildControls(){
   $("pad").addEventListener("click", function(e){
     var v = e.target.dataset && e.target.dataset.v; if (!v) return;
     state.scores[state.i] = +v; render();
-    var here = state.i;
-    setTimeout(function(){
-      if (state.step !== "rate" || state.i !== here) return;
-      var next = state.scores.indexOf(0);
-      if (next === -1) state.step = "pick"; else state.i = here < N - 1 && state.scores[here + 1] === 0 ? here + 1 : next;
-      render();
-    }, reduce ? 150 : 420);
   });
+  $("next").onclick = function(){
+    if (!state.scores[state.i]) return;
+    if (state.i < N - 1) state.i++;
+    else { var miss = state.scores.indexOf(0); if (miss === -1) state.step = "pick"; else state.i = miss; }
+    render();
+  };
   AREAS.forEach(function(a, i){
     var c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.id = "chip" + i; c.dataset.i = i;
     c.innerHTML = a.s + " <span></span>"; $("chips").appendChild(c);
@@ -290,18 +296,21 @@ function buildControls(){
   $("ages").addEventListener("click", function(e){
     var c = e.target.closest(".chip"); if (!c) return; state.age = state.age === c.dataset.age ? "" : c.dataset.age; render();
   });
-  $("start").onclick = function(){ state.step = "rate"; state.i = Math.max(0, state.scores.indexOf(0)); render(); };
+  function begin(){ state.name = cleanName($("name").value); state.step = "rate"; state.i = Math.max(0, state.scores.indexOf(0)); render(); window.scrollTo(0, 0); }
+  $("start").onclick = begin;
+  $("name").addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); $("name").blur(); begin(); } });
   $("back").onclick = function(){ if (state.i > 0) state.i--; else state.step = "intro"; render(); };
   $("back2").onclick = function(){ state.step = "rate"; state.i = 0; render(); };
   $("see").onclick = function(){ if (state.focus > -1){ state.step = "result"; render(); window.scrollTo(0, 0); } };
-  $("redo").onclick = function(){ state = {step:"rate", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:""}; $("shot").hidden = true; render(); window.scrollTo(0, 0); };
+  $("redo").onclick = function(){ state = {step:"rate", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:"", name:state.name}; $("shot").hidden = true; render(); window.scrollTo(0, 0); };
   $("mkimg").onclick = makeImage;
   var ig = "https://www.instagram.com/" + IG_HANDLE + "/";
   $("ig").href = ig; $("igFoot").href = ig;
 }
+function cleanName(v){ return String(v || "").replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 30); }
 function waText(){
   var line = AREAS.map(function(a, i){ return a.s + " " + state.scores[i]; }).join(" · ");
-  var t = "Hola Pablo, hice mi rueda de la vida.\n\n" + line + "\n\nQuiero mover primero: " + AREAS[state.focus].n + ".";
+  var t = "Hola Pablo, " + (state.name ? "soy " + state.name + ". Hice" : "hice") + " mi rueda de la vida.\n\n" + line + "\n\nQuiero mover primero: " + AREAS[state.focus].n + ".";
   if (state.age) t += "\nEdad: " + state.age + ".";
   return t;
 }
@@ -315,6 +324,8 @@ function render(){
     $("areaName").textContent = AREAS[state.i].n;
     $("areaDesc").textContent = AREAS[state.i].q;
     for (var v = 1; v <= 10; v++) $("key" + v).className = "key" + (state.scores[state.i] === v ? " sel" : "");
+    $("next").disabled = !state.scores[state.i];
+    $("next").textContent = state.i === N - 1 ? "Listo" : "Siguiente";
   }
   if (s === "pick"){
     AREAS.forEach(function(a, i){
@@ -325,6 +336,7 @@ function render(){
     $("see").disabled = state.focus < 0;
   }
   if (s === "result"){
+    $("resultTitle").textContent = state.name ? state.name + ", esta es tu rueda hoy." : "Esta es tu rueda, hoy.";
     $("question").textContent = "¿Qué tendría que pasar para que " + AREAS[state.focus].s + " suba un punto?";
     $("wa").href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waText());
   }
@@ -351,15 +363,17 @@ function arcText(ctx, text, r, midDeg, low, sp){
 function drawShare(){
   var c = document.createElement("canvas"); c.width = 1080; c.height = 1920;
   var x = c.getContext("2d"), k = 2.85, i;
-  x.fillStyle = INK; x.fillRect(0, 0, 1080, 1920);
-  x.fillStyle = PAPER; x.globalAlpha = .7; x.font = "600 30px 'Space Grotesk', sans-serif"; x.textBaseline = "alphabetic";
-  spaced(x, "MI RUEDA DE LA VIDA", 540, 330, 9); x.globalAlpha = 1;
+  x.fillStyle = BG; x.fillRect(0, 0, 1080, 1920);
+  var head = state.name ? "LA RUEDA DE " + state.name.toUpperCase() : "MI RUEDA DE LA VIDA", hs = 30;
+  x.fillStyle = PAPER; x.globalAlpha = .78; x.font = "600 " + hs + "px 'Space Grotesk', sans-serif"; x.textBaseline = "alphabetic";
+  while (x.measureText(head).width + 9 * head.length > 940 && hs > 18){ hs -= 2; x.font = "600 " + hs + "px 'Space Grotesk', sans-serif"; }
+  spaced(x, head, 540, 330, 9); x.globalAlpha = 1;
   x.save(); x.translate(540, 850); x.scale(k, k);
   x.strokeStyle = PAPER; x.lineWidth = 1 / k * 2;
-  [2,4,6,8].forEach(function(v){ x.globalAlpha = .13; x.beginPath(); x.arc(0, 0, rv(v), 0, Math.PI * 2); x.stroke(); });
+  [2,4,6,8].forEach(function(v){ x.globalAlpha = .17; x.beginPath(); x.arc(0, 0, rv(v), 0, Math.PI * 2); x.stroke(); });
   for (i = 0; i < N; i++){
     var s0 = (a0(i) + GAP/2) * Math.PI / 180, s1 = (a0(i) + STEP - GAP/2) * Math.PI / 180, v = state.scores[i];
-    x.globalAlpha = .035; x.fillStyle = PAPER; x.beginPath(); x.arc(0, 0, R, s0, s1); x.arc(0, 0, R0, s1, s0, true); x.closePath(); x.fill();
+    x.globalAlpha = .05; x.fillStyle = PAPER; x.beginPath(); x.arc(0, 0, R, s0, s1); x.arc(0, 0, R0, s1, s0, true); x.closePath(); x.fill();
     x.globalAlpha = 1; x.fillStyle = state.focus === i ? BRICK_HI : PAPER;
     x.beginPath(); x.arc(0, 0, rv(v), s0, s1); x.arc(0, 0, R0, s1, s0, true); x.closePath(); x.fill();
     var p = pt(v >= 4 ? rv(v) - 11 : rv(v) + 11, mid(i));
@@ -370,9 +384,9 @@ function drawShare(){
     arcText(x, AREAS[i].s.toUpperCase(), lower(i) ? RL + 8 : RL, mid(i), lower(i), 1.5);
   }
   x.globalAlpha = .34; x.strokeStyle = PAPER; x.beginPath(); x.arc(0, 0, R, 0, Math.PI * 2); x.stroke();
-  x.globalAlpha = 1; x.fillStyle = INK; x.beginPath(); x.arc(0, 0, R0 - 5, 0, Math.PI * 2); x.fill();
+  x.globalAlpha = 1; x.fillStyle = BG; x.beginPath(); x.arc(0, 0, R0 - 5, 0, Math.PI * 2); x.fill();
   x.globalAlpha = .34; x.stroke(); x.globalAlpha = 1; x.restore();
-  x.fillStyle = PAPER; x.globalAlpha = .7; x.font = "600 28px 'Space Grotesk', sans-serif"; spaced(x, "HOY ELIJO MOVER", 540, 1378, 8); x.globalAlpha = 1;
+  x.fillStyle = PAPER; x.globalAlpha = .78; x.font = "600 28px 'Space Grotesk', sans-serif"; spaced(x, "HOY ELIJO MOVER", 540, 1378, 8); x.globalAlpha = 1;
   x.textAlign = "center"; x.fillStyle = BRICK_HI;
   var name = AREAS[state.focus].n, size = 84; x.font = "italic 700 " + size + "px 'Playfair Display', Georgia, serif";
   while (x.measureText(name).width > 960 && size > 48){ size -= 4; x.font = "italic 700 " + size + "px 'Playfair Display', Georgia, serif"; }
@@ -404,8 +418,8 @@ function makeImage(){
 
 /* ====== ARRANQUE ====== */
 function start(saved){
-  if (saved && saved.scores && saved.scores.length === N) state = saved;
-  buildWheel(); buildControls(); render();
+  if (saved && saved.scores && saved.scores.length === N){ state = saved; if (!state.name) state.name = ""; }
+  buildWheel(); buildControls(); $("name").value = state.name; render();
 }
 var hot = window.claude && window.claude.hot;
 if (hot && hot.snapshot) hot.snapshot(function(){ return state; });
