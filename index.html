@@ -156,7 +156,7 @@ p{margin:0}
       <button class="btn line" id="mkimg" type="button">Guardar imagen para mis historias</button>
       <div class="shot" id="shot" hidden>
         <img id="shotImg" alt="Tu rueda de la vida lista para compartir">
-        <p class="small">Si no se descargó sola, mantén presionada la imagen y elige guardar. Al subirla, etiqueta a @pablom.coach.</p>
+        <p class="small" id="shotNote"></p>
       </div>
       <a class="btn line" id="ig" target="_blank" rel="noopener">Seguir a @pablom.coach</a>
     </div>
@@ -300,9 +300,9 @@ function buildControls(){
   $("start").onclick = begin;
   $("name").addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); $("name").blur(); begin(); } });
   $("back").onclick = function(){ if (state.i > 0) state.i--; else state.step = "intro"; render(); };
-  $("back2").onclick = function(){ state.step = "rate"; state.i = 0; render(); };
+  $("back2").onclick = function(){ resetImage(); state.step = "rate"; state.i = 0; render(); };
   $("see").onclick = function(){ if (state.focus > -1){ state.step = "result"; render(); window.scrollTo(0, 0); } };
-  $("redo").onclick = function(){ state = {step:"rate", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:"", name:state.name}; $("shot").hidden = true; render(); window.scrollTo(0, 0); };
+  $("redo").onclick = function(){ state = {step:"rate", i:0, scores:[0,0,0,0,0,0,0,0], focus:-1, age:"", name:state.name}; resetImage(); render(); window.scrollTo(0, 0); };
   $("mkimg").onclick = makeImage;
   var ig = "https://www.instagram.com/" + IG_HANDLE + "/";
   $("ig").href = ig; $("igFoot").href = ig;
@@ -339,6 +339,7 @@ function render(){
     $("resultTitle").textContent = state.name ? state.name + ", esta es tu rueda hoy." : "Esta es tu rueda, hoy.";
     $("question").textContent = "¿Qué tendría que pasar para que " + AREAS[state.focus].s + " suba un punto?";
     $("wa").href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waText());
+    prepareImage();
   }
   animate();
 }
@@ -395,25 +396,51 @@ function drawShare(){
   x.font = "600 36px 'Space Grotesk', sans-serif"; x.fillText("@" + IG_HANDLE, 540, 1650);
   return c;
 }
-function makeImage(){
+/* La imagen se arma apenas aparece el resultado, así el toque en el botón
+   descarga al instante (los celulares bloquean descargas que llegan tarde). */
+var shot = null, shotBusy = false, shotWaiting = false;
+var UA = navigator.userAgent || "";
+var IN_APP = /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Bytedance|BytedanceWebview|Line\//i.test(UA);
+var IOS = /iPhone|iPad|iPod/i.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function resetImage(){ if (shot && shot.url) URL.revokeObjectURL(shot.url); shot = null; shotBusy = false; shotWaiting = false; $("shot").hidden = true; }
+function prepareImage(){
+  if (shot || shotBusy) return; shotBusy = true;
   var ready = document.fonts && document.fonts.load
     ? Promise.all([document.fonts.load("italic 700 84px 'Playfair Display'"), document.fonts.load("500 50px 'Playfair Display'"), document.fonts.load("600 30px 'Space Grotesk'"), document.fonts.load("500 11px 'Space Grotesk'")]).catch(function(){})
     : Promise.resolve();
   ready.then(function(){
-    var c = drawShare();
-    $("shotImg").src = c.toDataURL("image/png"); $("shot").hidden = false;
-    c.toBlob(function(blob){
-      if (!blob) return;
-      var file = null; try { file = new File([blob], "mi-rueda-de-la-vida.png", {type:"image/png"}); } catch (e) {}
-      var text = "Mi rueda de la vida. ¿Y la tuya? @" + IG_HANDLE + (SITE_URL ? " " + SITE_URL : "");
-      if (file && navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file], text:text}).catch(function(){});
-      } else {
-        try { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mi-rueda-de-la-vida.png"; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
-      }
-    }, "image/png");
-    $("shot").scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"nearest"});
+    var c = drawShare(), data = c.toDataURL("image/png");
+    var done = function(blob){
+      shot = {data:data, blob:blob || null, url:blob ? URL.createObjectURL(blob) : data};
+      shotBusy = false; $("shotImg").src = data;
+      if (shotWaiting){ shotWaiting = false; deliverImage(); }
+    };
+    if (c.toBlob) c.toBlob(done, "image/png"); else done(null);
   });
+}
+function saveFile(){
+  var a = document.createElement("a"); a.href = shot.url; a.download = "mi-rueda-de-la-vida.png"; a.rel = "noopener";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function deliverImage(){
+  $("shot").hidden = false;
+  $("shotNote").textContent = IN_APP
+    ? "Dentro de Instagram o TikTok no se puede descargar: mantén presionada la imagen y elige guardar, o abre esta página en Chrome o Safari (menú ··· › Abrir en el navegador). Al subirla, etiqueta a @" + IG_HANDLE + "."
+    : "Listo, quedó en tu teléfono. Si no la ves, mantén presionada la imagen y elige guardar. Al subirla, etiqueta a @" + IG_HANDLE + ".";
+  if (!IN_APP){
+    var file = null; try { if (shot.blob) file = new File([shot.blob], "mi-rueda-de-la-vida.png", {type:"image/png"}); } catch (e) {}
+    if (IOS && file && navigator.canShare && navigator.canShare({files:[file]})){
+      // En iPhone la hoja de compartir es la que ofrece "Guardar imagen" en Fotos.
+      navigator.share({files:[file]}).catch(function(){ try { saveFile(); } catch (e) {} });
+    } else {
+      try { saveFile(); } catch (e) {}
+    }
+  }
+  $("shot").scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"nearest"});
+}
+function makeImage(){
+  if (shot){ deliverImage(); return; }
+  shotWaiting = true; $("shot").hidden = false; $("shotNote").textContent = "Preparando tu imagen…"; prepareImage();
 }
 
 /* ====== ARRANQUE ====== */
